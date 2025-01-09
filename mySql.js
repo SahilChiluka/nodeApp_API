@@ -21,11 +21,11 @@ const connection = mysql2.createPool({
     database : process.env.MYSQLDB
 });
 
-// function createTable() {
-//     connection.query("CREATE TABLE users(id INTEGER PRIMARY KEY AUTO_INCREMENT,username varchar(255), email varchar(255), job varchar(255), logintime VARCHAR(255), logouttime VARCHAR(255))");
-//     console.log("Table Created");
-// }
-// createTable();
+function createTable() {
+    connection.query("CREATE TABLE users(id INTEGER PRIMARY KEY AUTO_INCREMENT,username varchar(255), email varchar(255), job varchar(255), logintime VARCHAR(255), logouttime VARCHAR(255), createdAt VARCHAR(255))");
+    console.log("Table Created");
+}
+createTable();
 
 server.get('/mysql/get', async function(req, res) {
     const result = await connection.query("SELECT * FROM users");
@@ -49,8 +49,9 @@ server.del('/mysql/delete/:id', async function(req, res) {
     await connection.query("DELETE FROM users WHERE id = ?",[id]);
     res.send('Data Deleted sucessfully', id);
 });
+
 let summaryData = [];
-server.get('/mysql/summarizeData/:job', async function(req, res) {
+server.get('/mysql/report/:job', async function(req, res) {
     const job = req.params.job;
     let sqlQuery = "SELECT * FROM users WHERE job = ?";
     try {
@@ -80,12 +81,15 @@ server.listen(PORT, function () {
 // let bulkData = [];
 // async function createFakeData() {
 //     for(let i=0; i<100000; i++) {
+    //    const loginTime = faker.date.recent(30).getTime(); 
+    //     const logoutTime = loginTime + (Math.floor(Math.random() * 60) + 1) * 60000;
 //         bulkData.push([
 //             (username = faker.internet.username()),
 //             (email = faker.internet.email()),
 //             (job = faker.person.jobType()),
-//             (logintime = Date.now()),
-//             (logouttime = Date.now() + 10000),
+//             (logintime = loginTime),
+//             (logouttime = logoutTime),
+//             (createdAt = new Date()),
 //         ]);
 //     }
 // }
@@ -109,5 +113,5 @@ server.listen(PORT, function () {
 // }
 
 // const time = 1736420294397.5645
-const formattedTime = moment(1736420295099).format("h:mm A");
-console.log(formattedTime);
+// const formattedTime = moment(1736420295099).format("h:mm A");
+// console.log(formattedTime);
