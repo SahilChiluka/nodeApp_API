@@ -6,6 +6,7 @@ const { faker } = require('@faker-js/faker');
 const moment = require('moment');
 const { v4: uuidv4 } = require('uuid');
 uuidv4();
+const bulkData = require('./utils');
 
 dotenv.config();
 
@@ -53,7 +54,7 @@ server.del('/mongo/delete/:id', async function(req, res) {
     await db.collection('users').deleteOne({userId: id});
     res.send("Deleted Sucessfully", id); 
 });
-
+// console.log(bulkData);
 server.post('/mongo/insertBulk', async function(req, res) {
     try {
         await db.collection('users').insertMany(bulkData);
