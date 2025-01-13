@@ -1,14 +1,15 @@
 const { faker } = require('@faker-js/faker');
- 
 
-let bulkData = []; 
+let mongoData = [];
+let mysqlData = []; 
+let elasticData = [];
 async function bulkinsert(){
     for (let i = 0; i < 100000; i++) {
         
         var agentName=faker.helpers.arrayElement(['pradeep', 'atul', 'sahil', 'rohit', 'akash', 'anupam', 'ajay', 'ayush'])
         var campaignName=faker.helpers.arrayElement(['Insurance', 'sales', 'marketing', 'finance'])
         var processName= faker.helpers.arrayElement(['process1', 'process2', 'process3', 'process4', 'process5'])
-        var leadID= Math.floor(Math.random() * 10)+1;
+        var leadsetID= Math.floor(Math.random() * 10)+1;
         var referenceUUID= faker.string.uuid();
         var customerUUID= faker.string.uuid();
 
@@ -19,19 +20,19 @@ async function bulkinsert(){
         var datetime = new Date();
         datetime.setHours(randomHour, randomMinute, randomSecond);
 
-        let calltype = faker.helpers.arrayElement(['disposed', 'missed', 'autoFail', 'autoDrop']);
+        let callType = faker.helpers.arrayElement(['disposed', 'missed', 'autoFail', 'autoDrop']);
         // console.log(calltype)
         let disposeName;
         let disposeType = 'null';
             
-        if (calltype == 'missed') {
+        if (callType == 'missed') {
           disposeName = 'agent not found';
           agentName = 'null';
           referenceUUID = 'null';
-        } else if (calltype == "autoFail") {
+        } else if (callType == "autoFail") {
           disposeName = faker.helpers.arrayElement(["busy", "decline", "not reachable"]);
           customerUUID = 'null';
-        } else if(calltype == "autoDrop") {
+        } else if(callType == "autoDrop") {
             disposeName = 'agent not found';
             agentName = 'null';
             referenceUUID = 'null';
@@ -52,10 +53,10 @@ async function bulkinsert(){
         let mute = 0;
         let conference = 0;
         let hold = 0;
-        let disposetime = 0;
+        let disposeTime = 0;
         let duration = 0;
         
-        if (calltype == 'missed' || calltype == 'autoFail' || calltype == 'autoDrop' ) {
+        if (callType == 'missed' || callType == 'autoFail' || callType == 'autoDrop' ) {
             if(disposeName == 'not reachable') {
                 ringing = 0;
             }
@@ -65,10 +66,10 @@ async function bulkinsert(){
             const buttons = faker.helpers.arrayElement(['mute', 'conference', 'hold', '']);
           // selectedVariables.forEach(variable => {
             // console.log(buttons);
-            disposetime = 10 + Math.floor(Math.random() * 10)+1;
+            disposeTime = 10 + Math.floor(Math.random() * 10)+1;
             callTime = faker.number.int({ min: 10, max: 300 });
             if(disposeType == 'etx') {
-                transfer = faker.number.int({ min: 5, max: 300 });
+                transfer = faker.number.int({ min: 5, max: 30 });
             } else {
                 switch (buttons) {
                 case 'mute':
@@ -85,46 +86,58 @@ async function bulkinsert(){
         // });
       duration = ringing+transfer+callTime+mute+conference+hold;
     }
-    bulkData.push({ 
-        calltype,
-        agentName, 
-        campaignName, 
-        processName, 
-        leadID, 
-        referenceUUID, 
-        customerUUID, 
-        ringing,
-        callTime, 
-        hold, 
-        mute, 
-        transfer, 
-        conference, 
-        duration, 
-        disposeType, 
-        disposeName,  
-        disposetime,
-        datetime
-    });
-}
+        mongoData.push({agentName, campaignName, processName, leadsetID, referenceUUID, customerUUID,callType, ringing,callTime, hold, mute, transfer, conference, duration,disposeTime, disposeType, disposeName,  datetime});
+
+        mysqlData.push([
+            agentName, 
+            campaignName, 
+            processName, 
+            leadsetID, 
+            referenceUUID, 
+            customerUUID,
+            callType, 
+            ringing,
+            callTime, 
+            hold, 
+            mute, 
+            transfer, 
+            conference, 
+            duration,
+            disposeTime, 
+            disposeType, 
+            disposeName,  
+            datetime
+        ]);
+
+        elasticData.push({
+            index: {
+                _index: 'sahil_logger',
+            }
+        },
+        {
+            agentName, 
+            campaignName, 
+            processName, 
+            leadsetID, 
+            referenceUUID, 
+            customerUUID,
+            callType, 
+            ringing,
+            callTime, 
+            hold, 
+            mute, 
+            transfer, 
+            conference, 
+            duration,
+            disposeTime, 
+            disposeType, 
+            disposeName,  
+            datetime
+        });
+    }
 
 }
 bulkinsert();
-// console.log(bulkData);
-module.exports = bulkData;
-
-// const time = new Date();// faker.date.soon({ days: 1 }) // '2022-02-05T09:55:39.216Z'
-// console.log(time);
-// Generate a random number between 0 and 23 for the hour
-// const randomHour = 12 + Math.floor(Math.random() * 12); 
-
-// // Generate a random number between 0 and 59 for the minute
-// const randomMinute = Math.floor(Math.random() * 60); 
-
-// // Generate a random number between 0 and 59 for the second
-// const randomSecond = Math.floor(Math.random() * 60);
-
-// // Create a new Date object and set the time
-// const randomTime = new Date();
-// randomTime.setHours(randomHour, randomMinute, randomSecond);
-
-// console.log(randomTime.toLocaleTimeString());
+// console.log(mongoData);
+// console.log(elasticData);
+module.exports = {mongoData, mysqlData, elasticData};

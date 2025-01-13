@@ -6,7 +6,7 @@ const { faker } = require('@faker-js/faker');
 const moment = require('moment');
 const { v4: uuidv4 } = require('uuid');
 uuidv4();
-const bulkData = require('./utils');
+const mongoData = require('./utils');
 
 dotenv.config();
 
@@ -22,10 +22,11 @@ let db;
 
 const client = new MongoClient(URI);
 
-async function mongoConnection() {
+const mongoConnection = async () => {
     await client.connect();
     db = client.db(MONGODB);
     console.log("Mongo Connected");
+    return db;
 }
 
 mongoConnection();
@@ -54,10 +55,12 @@ server.del('/mongo/delete/:id', async function(req, res) {
     await db.collection('users').deleteOne({userId: id});
     res.send("Deleted Sucessfully", id); 
 });
-// console.log(bulkData);
+// const data = JSON.stringify(bulkData);
+// console.log(data);
+
 server.post('/mongo/insertBulk', async function(req, res) {
     try {
-        await db.collection('users').insertMany(bulkData);
+        await db.collection('loggerCollection').insertMany(bulkData);
         res.send("Bulk Data Inserted Successfully");
     } catch (error) {
         console.log(error);
@@ -65,22 +68,6 @@ server.post('/mongo/insertBulk', async function(req, res) {
 });
 
 server.get('/mongo/report/:job', async function (req, res) {
-    const job = req.params.job;
-    try {
-        const users = await db.collection('users').find({job: job}).toArray();
-
-        const report = users.map(user => ({
-            userId: user.userId,
-            username: user.username,
-            email: user.email,
-            job: user.job,
-            loginTime: moment(user.logintime).format('HH:mm:ss'),
-            logoutTime: moment(user.logouttime).format('HH:mm:ss')
-        }));
-        res.send(report);
-    } catch (error) {
-        console.log(error);
-    }
 });
 
 // let bulkData = [];
@@ -114,4 +101,48 @@ server.get('/mongo/report/:job', async function (req, res) {
 server.listen(PORT, function () {
     console.log(`listening on port ${PORT}`);
 });
+
+// const response= await collection.aggregate([
+//     {
+//       "$group": {
+//         "_id": {
+//             "hour": { "$hour": "$date_time" },
+//             "type": "$type",
+//             "campaign_name": "$campaign_name",
+//             "process_name": "$process_name"
+//         },
+//         "call_count": { "$sum": 1 },
+//         "total_duration": { "$sum": "$duration" },
+//         "total_hold": { "$sum": "$hold" },
+//         "total_mute": { "$sum": "$mute" },
+//         "total_ringing": { "$sum": "$ringing" },
+//         "total_transfer": { "$sum": "$transfer" },
+//         "total_conference": { "$sum": "$conference" },
+//         "unique_calls": { "$addToSet": "$reference_uuid" }
+//       }
+//     },
+//     {
+//       "$project": {
+//         "hour": "$_id.hour",
+//         "type": "$_id.type",
+//         "campaign_name": "$_id.campaign_name",
+//         "process_name": "$_id.process_name",
+//         "call_count": 1,
+//         "total_duration": 1,
+//         "total_hold": 1,
+//         "total_mute": 1,
+//         "total_ringing": 1,
+//         "total_transfer": 1,
+//         "total_conference": 1,
+//         "unique_calls": { "$size": "$unique_calls" }
+//       }
+//     },
+//     {
+//       "$sort": { 
+//         "hour": 1
+//       }
+//     }
+//   ]).toArray()
+
+module.exports = {mongoConnection};
 

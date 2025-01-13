@@ -15,7 +15,7 @@ server.use(bodyParser.json());
 const PORT = process.env.PORT;
 
 // client.indices.create({
-//     index: 'sahil',
+//     index: 'sahil_logger',
 // }, (err, resp, status) => {
 //     console.log("create", resp);
 // });
@@ -106,3 +106,5 @@ server.post('/elasticsearch/insertBulk', async function(req, res) {
 server.listen(PORT, function () {
     console.log(`listening on port ${PORT}`);
 });
+
+module.exports = client;
