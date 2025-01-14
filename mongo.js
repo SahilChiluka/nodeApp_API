@@ -67,6 +67,49 @@ server.post('/mongo/insertBulk', async function(req, res) {
     } 
 });
 
+server.get('/mongo/get/hourlyReport', async function(req, res) {
+    try {
+        const result = await db.collection('loggerTable').aggregate([
+            {
+              "$group": {
+                "_id": {
+                    "hour": { "$hour": "$datetime" },
+                },
+                "call_count": { "$sum": 1 },
+                "total_duration": { "$sum": "$duration" },
+                "total_calltime": { "$sum": "$callTime" },
+                "total_hold": { "$sum": "$hold" },
+                "total_mute": { "$sum": "$mute" },
+                "total_ringing": { "$sum": "$ringing" },
+                "total_transfer": { "$sum": "$transfer" },
+                "total_conference": { "$sum": "$conference" },
+              }
+            },
+            {
+              "$project": {
+                "hour": "$_id.hour",
+                "call_count": 1,
+                "total_duration": 1,
+                "total_calltime": 1,
+                "total_hold": 1,
+                "total_mute": 1,
+                "total_ringing": 1,
+                "total_transfer": 1,
+                "total_conference": 1,
+              }
+            },
+            {
+              "$sort": { 
+                "hour": 1
+              }
+            }
+          ]).toArray()
+          res.send(result);
+    } catch (error) {
+        console.log(error);
+    }
+})
+
 server.get('/mongo/report/:job', async function (req, res) {
 });
 
@@ -98,8 +141,8 @@ server.get('/mongo/report/:job', async function (req, res) {
 //     insertIntoMongo(chunkArray);
 // }
 
-server.listen(PORT, function () {
-    console.log(`listening on port ${PORT}`);
+server.listen(5000, function () {
+    console.log(`listening on port 5000`);
 });
 
 // const response= await collection.aggregate([
