@@ -79,7 +79,7 @@ server.post('/mysql/insertBulk',async function (req,res) {
 
 server.get('/mysql/get/overallReport', async function(req, res) {
     try {
-        const [result] = await connection.query("SELECT * FROM logger_table LIMIT 10");
+        const [result] = await connection.query("SELECT * FROM logger_table");
         res.send(result);
     } catch (error) {
         console.log(error);

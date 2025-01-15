@@ -80,9 +80,9 @@ server.get('/mongo/get/hourlyReport', async function(req, res) {
                 "total_calltime": { "$sum": "$callTime" },
                 "total_hold": { "$sum": "$hold" },
                 "total_mute": { "$sum": "$mute" },
-                "total_ringing": { "$sum": "$ringing" },
                 "total_transfer": { "$sum": "$transfer" },
                 "total_conference": { "$sum": "$conference" },
+                "total_ringing": { "$sum": "$ringing" },
               }
             },
             {
@@ -93,9 +93,9 @@ server.get('/mongo/get/hourlyReport', async function(req, res) {
                 "total_calltime": 1,
                 "total_hold": 1,
                 "total_mute": 1,
-                "total_ringing": 1,
                 "total_transfer": 1,
                 "total_conference": 1,
+                "total_ringing": 1,
               }
             },
             {

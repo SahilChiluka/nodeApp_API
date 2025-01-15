@@ -23,7 +23,7 @@ const PORT = process.env.PORT;
 server.get('/elasticsearch/get', async function(req, res) {
     //const data = req.body.name;
     const result = await client.search({
-        index: 'sahil',
+        index: 'sahil_logger',
         // to get particular data
         // body: {
         //   query: {
@@ -35,7 +35,7 @@ server.get('/elasticsearch/get', async function(req, res) {
       }, (err, resp, status) => {
         console.log(resp);
       });
-      console.log(result);
+      // console.log(result);
       res.send(result);
 });
 
@@ -75,36 +75,73 @@ server.del('/elasticsearch/delete/:id', async function(req, res) {
     res.send("Deleted Successfully");
 });
 
-server.post('/elasticsearch/insertBulk', async function(req, res) {
-    let bulkData = [];
-    for(let i=0; i<500000; i++) {
-        bulkData.push({
-            index: {
-                _index: 'sahil',
-            }
-        },
-        {
-            "username" : faker.internet.username(),
-            "email" : faker.internet.email(),
-            "date" : faker.date.past(),
-            "time": Date.now(),
-        });
-    }
-    // console.log(bulkData);
+server.get("/elasticsearch/get/hourlyReport", async (req, res) => {
     try {
-        const result = await client.bulk({
-            index: 'sahil',
-            body: bulkData
+        const result = await client.search({
+        index: 'sahil_logger', 
+        body: {
+            "size": 0,
+                "aggs": {
+                "group_by_hour": {
+                    "date_histogram": {
+                    "field": "datetime",
+                    "calendar_interval": "hour"
+                    },
+                    "aggs": {
+                    "total_duration": {
+                    "sum": {
+                        "field": "duration"
+                    }
+                    },
+                    "total_calltime": {
+                    "sum": {
+                        "field": "callTime"
+                    }
+                    },
+                    "total_hold": {
+                    "sum": {
+                        "field": "hold"
+                    }
+                    },
+                    "total_mute": {
+                    "sum": {
+                        "field": "mute"
+                    }
+                    },
+                    "total_ringing": {
+                    "sum": {
+                        "field": "ringing"
+                    }
+                    },
+                    "total_transfer": {
+                    "sum": {
+                        "field": "transfer"
+                    }
+                    },
+                    "total_conference": {
+                    "sum": {
+                        "field": "conference"
+                    }
+                    },
+                    "unique_calls": {
+                    "value_count": {
+                        "field": "referenceUUID.keyword"
+                    }
+                    }
+                    }
+                }
+                }
+                }
         });
-        console.log(result);
-        res.send("Inserted Successfully");
+        // console.log(result.hits)
+        res.send(result);
     } catch (error) {
-       res.send(error); 
+        console.log(error);
     }
-});
+  });
 
-server.listen(PORT, function () {
-    console.log(`listening on port ${PORT}`);
+server.listen(8000, function () {
+    console.log(`listening on port 8000`);
 });
 
 module.exports = client;
