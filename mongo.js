@@ -14,7 +14,7 @@ const server = restify.createServer();
 
 server.use(bodyParser.json());
 
-const PORT = process.env.PORT;
+// const PORT = process.env.PORT;
 const URI = process.env.MONGOURI;
 const MONGODB = process.env.MONGODB;
 
@@ -60,11 +60,20 @@ server.del('/mongo/delete/:id', async function(req, res) {
 
 server.post('/mongo/insertBulk', async function(req, res) {
     try {
-        await db.collection('loggerCollection').insertMany(bulkData);
+        await db.collection('loggerTable').insertMany(bulkData);
         res.send("Bulk Data Inserted Successfully");
     } catch (error) {
         console.log(error);
     } 
+});
+
+server.get('/mongo/get/overallReport', async function(req, res) {
+  try {
+      const result =  await db.collection('loggerTable').find({}).limit(10).toArray();
+      res.send(result);
+  } catch (error) {
+      console.log(error);
+  }
 });
 
 server.get('/mongo/get/hourlyReport', async function(req, res) {
@@ -89,13 +98,13 @@ server.get('/mongo/get/hourlyReport', async function(req, res) {
               "$project": {
                 "hour": "$_id.hour",
                 "call_count": 1,
-                "total_duration": 1,
+                "total_ringing": 1,
                 "total_calltime": 1,
                 "total_hold": 1,
                 "total_mute": 1,
                 "total_transfer": 1,
                 "total_conference": 1,
-                "total_ringing": 1,
+                "total_duration": 1,
               }
             },
             {
@@ -104,7 +113,25 @@ server.get('/mongo/get/hourlyReport', async function(req, res) {
               }
             }
           ]).toArray()
-          res.send(result);
+
+          
+          // console.log(result);
+          let docs = [];
+          result.forEach((doc) => {
+              docs.push({
+                  'hour' : doc.hour,
+                  'call_count': doc.call_count,
+                  'total_ringing': doc.total_ringing,
+                  'total_calltime': doc.total_calltime,
+                  'total_hold': doc.total_hold,
+                  'total_mute': doc.total_mute,
+                  'total_transfer': doc.total_transfer,
+                  'total_conference': doc.total_conference,
+                  'total_duration': doc.total_duration,
+              });
+          });
+          // console.log(docs);
+          res.send(docs);
     } catch (error) {
         console.log(error);
     }

@@ -2,6 +2,7 @@ const restify = require('restify');
 const dotenv = require('dotenv');
 const bodyParser = require('body-parser');
 const { faker } = require('@faker-js/faker');
+const moment = require('moment');
 
 dotenv.config();
 
@@ -75,6 +76,23 @@ server.del('/elasticsearch/delete/:id', async function(req, res) {
     res.send("Deleted Successfully");
 });
 
+server.get('/elasticsearch/get/overallReport', async (req, res) => {
+    try {
+        const result = await client.search({
+            index: 'sahil_logger',
+            body: {
+                "from" : 0, "size" : 10,
+                query: {
+                    match_all: {}
+                },
+            }
+        });
+        res.send(result.hits.hits.map(data => data._source));
+    } catch (error) {
+        console.log(error);
+    }
+})
+
 server.get("/elasticsearch/get/hourlyReport", async (req, res) => {
     try {
         const result = await client.search({
@@ -134,7 +152,25 @@ server.get("/elasticsearch/get/hourlyReport", async (req, res) => {
                 }
         });
         // console.log(result.hits)
-        res.send(result);
+
+        let data = result['aggregations']['group_by_hour']['buckets'];
+        // console.log(data);
+        let docs = [];
+        data.forEach((doc) => {
+            docs.push({
+                'hour' : moment(doc.key).format('H'),
+                'call_count': doc.doc_count,
+                'total_ringing': doc.total_ringing.value,
+                'total_calltime': doc.total_calltime.value,
+                'total_hold': doc.total_hold.value,
+                'total_mute': doc.total_mute.value,
+                'total_transfer': doc.total_transfer.value,
+                'total_conference': doc.total_conference.value,
+                'total_duration': doc.total_duration.value,
+            });
+        });
+        // console.log(docs);
+        res.send(docs);
     } catch (error) {
         console.log(error);
     }

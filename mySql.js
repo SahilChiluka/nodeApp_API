@@ -64,9 +64,6 @@ server.del('/mysql/delete/:id', async function(req, res) {
     await connection.query("DELETE FROM users WHERE id = ?",[id]);
     res.send('Data Deleted sucessfully', id);
 });
-// const data = JSON.parse(bulkData);
-// const b = JSON.stringify(data);
-// console.log(b);
 
 server.post('/mysql/insertBulk',async function (req,res) {
     try {
@@ -79,7 +76,7 @@ server.post('/mysql/insertBulk',async function (req,res) {
 
 server.get('/mysql/get/overallReport', async function(req, res) {
     try {
-        const [result] = await connection.query("SELECT * FROM logger_table");
+        const [result] = await connection.query("SELECT * FROM logger_table LIMIT 10");
         res.send(result);
     } catch (error) {
         console.log(error);
@@ -88,17 +85,16 @@ server.get('/mysql/get/overallReport', async function(req, res) {
 
 server.get('/mysql/get/hourlyReport', async function(req, res) {
     try {
-        const [results] = await connection.query(`SELECT 
-        date(datetime) as date,
-        time(datetime) as hour, 
-        count(id) as total_calls,
-        sum(duration) as total_duration,
-        sum(callTime) as total_call_time, 
-        sum(hold) as total_hold_time, 
-        sum(mute) as total_mute_time, 
-        sum(transfer) as total_transfer_time, 
-        sum(conference) as total_conference_time,
-        sum(ringing) as total_ringing_time 
+        const [results] = await connection.query(`SELECT
+        hour(datetime) as hour, 
+        count(id) as call_count,
+        sum(ringing) as total_ringing,
+        sum(callTime) as total_calltime,
+        sum(hold) as total_hold, 
+        sum(mute) as total_mute, 
+        sum(transfer) as total_transfer, 
+        sum(conference) as total_conference,
+        sum(duration) as total_duration
         from logger_table
         group by 
         hour(datetime);
@@ -109,29 +105,13 @@ server.get('/mysql/get/hourlyReport', async function(req, res) {
     }
 });
 
-// let summaryData = [];
-// server.get('/mysql/report/:job', async function(req, res) {
-//     const job = req.params.job;
-//     let sqlQuery = "SELECT * FROM users WHERE job = ?";
-//     try {
-//         const result = await connection.query(sqlQuery,[job]);
-//         result[0].forEach((obj) => {
-//             summaryData.push({
-//                 id: obj.id,
-//                 username: obj.username,
-//                 email: obj.email,
-//                 job: obj.job,
-//                 login: moment(parseInt(obj.logintime)).format("h:mm:ss A"),
-//                 logout: moment(parseInt(obj.logouttime)).format("h:mm:ss A")
-//             });
-//         });
-//         console.log(summaryData);
-//         res.send(summaryData);
-//     } catch (error) {
-//         console.log(error);
-//         res.send(error);
-//     }
-// });
+server.get('/mysql/filter', async function(req, res) {
+    try {
+        
+    } catch (error) {
+        console.log(error);
+    }
+});    
 
 server.listen(PORT, function () {
     console.log(`listening on port ${PORT}`);
