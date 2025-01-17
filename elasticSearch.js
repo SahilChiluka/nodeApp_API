@@ -142,9 +142,9 @@ server.get("/elasticsearch/get/hourlyReport", async (req, res) => {
                     }
                     },
                     "unique_calls": {
-                    "value_count": {
-                        "field": "referenceUUID.keyword"
-                    }
+                        "value_count": {
+                            "field": "referenceUUID.keyword"
+                        }
                     }
                     }
                 }

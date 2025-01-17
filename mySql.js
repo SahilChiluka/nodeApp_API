@@ -6,6 +6,7 @@ const { faker } = require('@faker-js/faker');
 const moment = require('moment');
 const bulkData = require('./utils');
 const { v4: uuidv4 } = require('uuid');
+const { el } = require('@faker-js/faker');
 uuidv4();
 
 
@@ -24,7 +25,7 @@ const connection = mysql2.createPool({
     password: process.env.PASSWORD,
     database: process.env.MYSQLDB,
 });
-//    console.log("MYSQL Connected");
+console.log("MYSQL Connected");
 //     return connection;
 // }
 
@@ -76,7 +77,7 @@ server.post('/mysql/insertBulk',async function (req,res) {
 
 server.get('/mysql/get/overallReport', async function(req, res) {
     try {
-        const [result] = await connection.query("SELECT * FROM logger_table LIMIT 10");
+        const [result] = await connection.query("SELECT * FROM logger_table");
         res.send(result);
     } catch (error) {
         console.log(error);
@@ -105,9 +106,42 @@ server.get('/mysql/get/hourlyReport', async function(req, res) {
     }
 });
 
+let condition = [];
+
 server.get('/mysql/filter', async function(req, res) {
     try {
+        const filters = req.body;
+        // console.log(filters);
         
+        Object.keys(filters).forEach((element) => {
+            condition.push([`${element} = "${filters[element]}"`]);
+        });
+        console.log(condition);
+        let query = `SELECT * FROM logger_table WHERE ${condition.join(" AND ")}`;
+        console.log(query);
+        const [result] = await connection.query(query);
+        // console.log(result);
+        res.send(result);
+        condition = [];
+    } catch (error) {
+        console.log(error);
+    }
+});
+
+server.post('/mysql/filter', async function(req, res) {
+    try {
+        const filters = req.body;
+        // console.log(filters);
+        
+        Object.keys(filters).forEach((element) => {
+            condition.push([`${element} = "${filters[element]}"`]);
+        });
+        console.log(condition);
+        let query = `SELECT * FROM logger_table WHERE ${condition.join(" AND ")}`;
+        console.log(query);
+        const [result] = await connection.query(query);
+        // console.log(result);
+        res.send(result);
     } catch (error) {
         console.log(error);
     }
